@@ -2,6 +2,9 @@ import type { Route } from "./+types/home";
 import Navbar from "~/components/Navbar";
 import {resumes} from "../../constants";
 import ResumeCard from "~/components/ResumeCard";
+import {usePuterStore} from "~/lib/puter";
+import {useLocation, useNavigate} from "react-router";
+import {useEffect} from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,6 +14,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const {isLoading, auth} = usePuterStore();
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(auth.isAuthenticated) navigate("/auth?next=/");
+  }, [auth.isAuthenticated]);
+
   return <main className="bg-[url('/images/bg-main.svg)] bg-cover">
     <Navbar />
     <section className="main-section">
@@ -18,14 +29,13 @@ export default function Home() {
         <h1>Track your Application and Resume Ratings</h1>
           <h3>Review your submissions and get AI powered feedback.</h3>
       </div>
-
-    {resumes.length > 0 && (
-        <div className="resume-section">
-          {resumes.map((resume) => (
-              <ResumeCard key={resume.id} resume={resume}/>
-          ))}
-        </div>
-    )}
+        {resumes.length > 0 && (
+            <div className="resume-section">
+              {resumes.map((resume) => (
+                  <ResumeCard key={resume.id} resume={resume}/>
+              ))}
+            </div>
+        )}
     </section>
   </main>
 }
