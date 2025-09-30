@@ -1,8 +1,12 @@
 import {type FormEvent, useState} from 'react'
 import Navbar from "~/components/Navbar";
 import FileUploader from "~/components/FileUploader";
+import {usePuterStore} from "~/lib/puter";
+import {useNavigate} from "react-router";
 
 const Upload = () => {
+    const {auth, isLoading, fs, ai, kv} = usePuterStore();
+    const navigate = useNavigate();
     const[isProcessing, setIsProcessing] = useState(false);
     const[statusText, setStatusText] = useState('');
     const[set, setFile] = useState<File | null>(null);
@@ -11,15 +15,30 @@ const Upload = () => {
         setFile(file);
     }
 
+    const handleAnalyze = async ({companyName, jobTitle, jobDescription, file}:{companyName: string, jobTitle: string, jobDescription: string, file: File}) =>{
+        setIsProcessing(true);
+        setStatusText('Uploading file...');
+        const uploadFile = await fs.upload([file]);
+        if(!uploadFile) return setStatusText('Error, failed to upload file');
+
+        setStatusText('Converting to image...');
+        //const imageFile = await convertPdfToImage(file);
+    }
+
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = e.currentTarget.closest('form');
         if(!form) return;
         const formData = new FormData(form);
 
-        const companyName = formData.get('company-name');
-        const jobTitle = formData.get('job-title');
-        const jobDescription = formData.get('job-description');
+        const companyName = formData.get('company-name') as string;
+        const jobTitle = formData.get('job-title') as string;
+        const jobDescription = formData.get('job-description') as string;
+
+
+        if(!file) return;
+
+        handleAnalyze({companyName, jobTitle, jobDescription, file});
     }
 
     return (
